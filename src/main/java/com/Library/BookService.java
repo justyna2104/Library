@@ -48,4 +48,12 @@ public class BookService extends GenericDao<Book> {
         deleteEntity(book);
     }
 
+    public String oneString(List<Book> books){
+        String result = "";
+        for (Book s:books) {
+            result += s.toString() + " \n";
+        }
+        return result;
+    }
+
 }
