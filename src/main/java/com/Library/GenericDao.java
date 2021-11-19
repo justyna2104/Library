@@ -19,7 +19,8 @@ public class GenericDao<T> {
 
     public <T> void addEntity(T t){
         entityManager.getTransaction().begin();
-        entityManager.persist(t);
+        //entityManager.persist(t);
+        entityManager.merge(t);
         entityManager.getTransaction().commit();
         //entityManager.close();
     }
@@ -28,7 +29,7 @@ public class GenericDao<T> {
     public <T> List listEntity(){
 
         List<T> list = entityManager.createQuery("FROM " + type.getName()).getResultList();
-        entityManager.close();
+        //entityManager.close();
         return list;
     }
 
@@ -62,5 +63,6 @@ public class GenericDao<T> {
         entityManager.getTransaction().commit();
         //entityManager.close();
     }
+
 
 }

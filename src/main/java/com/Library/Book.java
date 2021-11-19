@@ -16,16 +16,19 @@ public class Book {
     @Column(name = "id")
     private int id;
 
+    @Column(name = "isbnNumber")
+    private Long isbnNumber;
+
     @Column(name = "title")
     private String title;
 
-    @ManyToMany (mappedBy = "books")
+    @ManyToMany (mappedBy = "books", cascade = {CascadeType.MERGE})
     private Set<Author> authors = new HashSet<>();
 
-    @ManyToMany(cascade = {CascadeType.ALL})
+    @ManyToMany(cascade = {CascadeType.MERGE})
     @JoinTable(
             name = "book_Genre",
-            joinColumns = {@JoinColumn(name = "bookId")},
+            joinColumns = {@JoinColumn(name = "bookId", referencedColumnName = "id")},
             inverseJoinColumns = {@JoinColumn(name = "genreId")}
             )
     private Set<Genre> genres = new HashSet<>();
@@ -36,11 +39,11 @@ public class Book {
     @Column(name = "amountAvailable")
     private int amountAvailable;
 
-    public Book(String title, Set<Author> authors, Set<Genre> genres, Set<CheckOut> checkOuts, int amountAvailable) {
+    public Book(String title, Long isbnNumber, Set<Author> authors, Set<Genre> genres, int amountAvailable) {
         this.title = title;
+        this.isbnNumber = isbnNumber;
         this.authors = authors;
         this.genres = genres;
-        this.checkOuts = checkOuts;
         this.amountAvailable = amountAvailable;
     }
 
@@ -86,12 +89,29 @@ public class Book {
         this.amountAvailable = amountAvailable;
     }
 
+    public Long getIsbnNumber() {
+        return isbnNumber;
+    }
+
+    public void setIsbnNumber(Long isbnNumber) {
+        this.isbnNumber = isbnNumber;
+    }
+
+    public Set<CheckOut> getCheckOuts() {
+        return checkOuts;
+    }
+
+    public void setCheckOuts(Set<CheckOut> checkOuts) {
+        this.checkOuts = checkOuts;
+    }
+
     @Override
     public String toString() {
         return "Book:" +
                 " title: " + title +
-                //", authors: " + authors +
-               // ", genres: " + genres +
+                // " ISBN: " + isbnNumber +
+                ", authors: " + authors +
+                ", genres: " + genres +
                 ", amountAvailable: " + amountAvailable;
     }
 }

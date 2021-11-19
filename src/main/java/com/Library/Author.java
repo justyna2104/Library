@@ -1,8 +1,11 @@
 package com.Library;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,19 +27,23 @@ public class Author {
     @Column(name = "nationality")
     private String nationality;
 
-    @ManyToMany(cascade = {CascadeType.ALL})
+    @Column(name = "dateOfBirth")
+    private LocalDate dateOfBirth;
+
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "author_book",
-            joinColumns = {@JoinColumn(name = "authorId")},
+            joinColumns = {@JoinColumn(name = "authorId", referencedColumnName = "id")},
             inverseJoinColumns = {@JoinColumn(name = "bookId")}
     )
     private Set<Book> books = new HashSet<>();
 
-    public Author(String firstname, String lastname, String nationality, Set<Book> books) {
+    public Author(String firstname, String lastname, LocalDate dateOfBirth, String nationality) {
         this.firstname = firstname;
         this.lastname = lastname;
+        this.dateOfBirth = dateOfBirth;
         this.nationality = nationality;
-        this.books = books;
     }
 
     public Author(){};
@@ -81,12 +88,21 @@ public class Author {
         this.books = books;
     }
 
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
     @Override
     public String toString() {
-        return "Author: " +
+        return //"Author: " +
                 "firstname: " + firstname +
-                ", lastname: " + lastname +
-                ", nationality: " + nationality +
-                ", books: " + books;
+                ", lastname: " + lastname;
+                //", date of birth: " + dateOfBirth +
+                //", nationality: " + nationality +
+                //", books: " + books;
     }
 }

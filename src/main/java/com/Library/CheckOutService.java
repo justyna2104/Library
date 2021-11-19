@@ -10,4 +10,7 @@ public class CheckOutService extends GenericDao<CheckOut> {
                 .setParameter("now", LocalDate.now()).getResultList();
         return readers;
     }
+
+
 }
+

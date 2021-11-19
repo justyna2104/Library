@@ -4,6 +4,7 @@ import com.sun.istack.Nullable;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.Set;
 
@@ -22,9 +23,12 @@ public class Reader {
     @Column(name = "lastname")
     private String lastname;
 
+    @Column(name = "peselNumber")
+    private Long peselNumber;
+
     @Nullable
     @Column(name = "phoneNumber")
-    private Integer phoneNumber;
+    private Long phoneNumber;
 
     @Nullable
     @Column(name = "address")
@@ -34,14 +38,15 @@ public class Reader {
     private Set<CheckOut> checkOuts;
 
     @Column(name = "birthday")
-    private Date birthday;
+    private LocalDate birthday;
 
-    public Reader(String firstname, String lastname, Boolean isAbleToCheckOut, int phoneNumber, String address, Set<CheckOut> checkOuts) {
+    public Reader(String firstname, String lastname, Long PESEL, Long phoneNumber, String address, LocalDate birthday) {
         this.firstname = firstname;
         this.lastname = lastname;
+        this.peselNumber = PESEL;
         this.phoneNumber = phoneNumber;
         this.address = address;
-        this.checkOuts = checkOuts;
+        this.birthday = birthday;
     }
 
     public Reader(){}
@@ -71,11 +76,11 @@ public class Reader {
     }
 
 
-    public int getPhoneNumber() {
+    public Long getPhoneNumber() {
         return phoneNumber;
     }
 
-    public void setPhoneNumber(Integer phoneNumber) {
+    public void setPhoneNumber(Long phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
 
@@ -96,21 +101,29 @@ public class Reader {
     }
 
 
-    public Date getBirthday() {
+    public LocalDate getBirthday() {
         return birthday;
     }
 
-    public void setBirthday(Date birthday) {
+    public void setBirthday(LocalDate birthday) {
         this.birthday = birthday;
+    }
+
+    public Long getPeselNumber() {
+        return peselNumber;
+    }
+
+    public void setPeselNumber(Long peselNumber) {
+        this.peselNumber = peselNumber;
     }
 
     @Override
     public String toString() {
         return "Reader: " +
-                "firstname: " + firstname +
-                ", lastname: " + lastname +
+                  firstname +
+                " " + lastname +
                 ", phoneNumber: " + phoneNumber +
-                ", address: " + address +
-                ", date of birth (YYYY/MM/DD): " + birthday;
+                ", address: " + address;
+                //", date of birth (YYYY/MM/DD): " + birthday;
     }
 }
