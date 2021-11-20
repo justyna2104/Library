@@ -10,6 +10,7 @@ import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
+import org.w3c.dom.Text;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -50,6 +51,9 @@ public class Main {
                 10
         ));
         contentPanel.addComponent(menuTitle);
+
+        contentPanel.addComponent(new Label("BOOK MANAGEMENT:"));
+        contentPanel.addComponent(new Label(""));
 
         // SEARCHING BY AUTHOR
         final Window searchBookByAuthorWindow = new BasicWindow("Search Window"); // window to search book by author
@@ -168,11 +172,11 @@ public class Main {
                     textGUI.addWindowAndWait(areYouSureToRemoveBookWindow);
                 }));
             }
-            chooseBookToRemovePanel.addComponent(new Button("close", () -> textGUI.removeWindow(chooseBookToRemoveWindow)));
+            chooseBookToRemovePanel.addComponent(new Button("Close Window", () -> textGUI.removeWindow(chooseBookToRemoveWindow)));
             textGUI.addWindowAndWait(chooseBookToRemoveWindow);
             chooseBookToRemovePanel.removeAllComponents();
     }));
-        removeBookByTitlePanel.addComponent(new Button("close", () -> textGUI.removeWindow(removeBookByTitleWindow)));
+        removeBookByTitlePanel.addComponent(new Button("Close Window", () -> textGUI.removeWindow(removeBookByTitleWindow)));
 
         //CHECK AVAILABILITY
         final Window checkAvailabilityWindow = new BasicWindow("Check Availability Window"); // window to check availability
@@ -189,22 +193,26 @@ public class Main {
         TextBox inputTitleToCheck = new TextBox();
         checkAvailabilityPanel.addComponent(inputTitleToCheck);
         checkAvailabilityPanel.addComponent(new Button("Search", () -> {
-                List<Book> books = bookService.findByTitle(inputTitleToCheck.getText());
-            for (Book b : books) {
+            List<Book> books = bookService.findByTitle(inputTitleToCheck.getText());
+            if(books.isEmpty()){
+                MessageDialog.showMessageDialog(textGUI, "Found Books", "No book has been found.", MessageDialogButton.OK);
+            }else{
+                for (Book b : books) {
                     whichToCheckPanel.addComponent(new Label(b.getTitle()));
                     whichToCheckPanel.addComponent(new Button("check", () ->{
-                            if(bookService.checkAvailability(b)){
-                                MessageDialog.showMessageDialog(textGUI, "Checked", b.getTitle() + " is available.", MessageDialogButton.OK);
-                            }else {
-                                MessageDialog.showMessageDialog(textGUI, "Checked", b.getTitle() + " is not available.", MessageDialogButton.OK);
-                            }
+                        if(bookService.checkAvailability(b)){
+                            MessageDialog.showMessageDialog(textGUI, "Checked", b.getTitle() + " is available.", MessageDialogButton.OK);
+                        }else {
+                            MessageDialog.showMessageDialog(textGUI, "Checked", b.getTitle() + " is not available.", MessageDialogButton.OK);
+                        }
                     }));
+                }
+                whichToCheckPanel.addComponent(new Button("Close Window", () -> textGUI.removeWindow(whichToCheckWindow)));
+                textGUI.addWindowAndWait(whichToCheckWindow);
+                whichToCheckPanel.removeAllComponents();
             }
-            whichToCheckPanel.addComponent(new Button("close", () -> textGUI.removeWindow(whichToCheckWindow)));
-            textGUI.addWindowAndWait(whichToCheckWindow);
-            whichToCheckPanel.removeAllComponents();
         }));
-        checkAvailabilityPanel.addComponent(new Button("close", () -> textGUI.removeWindow(checkAvailabilityWindow)));
+        checkAvailabilityPanel.addComponent(new Button("Close Window", () -> textGUI.removeWindow(checkAvailabilityWindow)));
 
 
         //RETURN BOOK
@@ -220,35 +228,43 @@ public class Main {
         Panel chooseReturningReaderPanel = new Panel(new GridLayout(2));
         Panel returnBookPanel = new Panel(new GridLayout(2));
 
-        findReturningReaderPanel.addComponent(new Label("Enter name: "));
+        findReturningReaderPanel.addComponent(new Label("Enter returning reader's name: "));
         TextBox inputNameOfReturningReader = new TextBox();
         findReturningReaderPanel.addComponent(inputNameOfReturningReader);
         findReturningReaderPanel.addComponent(new Button("Search", () -> {
             List<Reader> readers = readerService.findByName(inputNameOfReturningReader.getText());
-            for (Reader r : readers) {
-                chooseReturningReaderPanel.addComponent(new Label(r.getFirstname() + " " + r.getLastname()));
-                chooseReturningReaderPanel.addComponent(new Button("Choose", () -> {
-                    List<Book> books = readerService.checkedOutBooks(r);
-                    for(Book b : books){
-                        returnBookPanel.addComponent(new Label(b.getTitle()));
+            if(readers.isEmpty()){
+                MessageDialog.showMessageDialog(textGUI, "Found Books", "No reader has been found.", MessageDialogButton.OK);
+            }else{
+                for (Reader r : readers) {
+                    chooseReturningReaderPanel.addComponent(new Label(r.getFirstname() + " " + r.getLastname()));
+                    chooseReturningReaderPanel.addComponent(new Button("Choose", () -> {
+                        List<Book> books = readerService.checkedOutBooks(r);
+                        if(books.isEmpty()){
+                            MessageDialog.showMessageDialog(textGUI, "Found Books", "This reader has no books.", MessageDialogButton.OK);
+                        }else {
+                            for(Book b : books){
+                                returnBookPanel.addComponent(new Label(b.getTitle()));
 
-                        returnBookPanel.addComponent(new Button("return", () -> {
-                            bookService.handBack(b, r);
-                            MessageDialog.showMessageDialog(textGUI, "Returned book", b.getTitle() + " has been returned.", MessageDialogButton.OK);
-                            textGUI.removeWindow(returnBookWindow);
+                                returnBookPanel.addComponent(new Button("return", () -> {
+                                    bookService.handBack(b, r);
+                                    MessageDialog.showMessageDialog(textGUI, "Returned book", b.getTitle() + " has been returned.", MessageDialogButton.OK);
+                                    textGUI.removeWindow(returnBookWindow);
+                                    returnBookPanel.removeAllComponents();
+                                }));
+                            }
+                            returnBookPanel.addComponent(new Button("Close Window", () -> textGUI.removeWindow(returnBookWindow)));
+                            textGUI.addWindowAndWait(returnBookWindow);
                             returnBookPanel.removeAllComponents();
-                        }));
-                    }
-                    returnBookPanel.addComponent(new Button("close", () -> textGUI.removeWindow(returnBookWindow)));
-                    textGUI.addWindowAndWait(returnBookWindow);
-                    returnBookPanel.removeAllComponents();
-                }));
+                        }
+                    }));
+                }
+                chooseReturningReaderPanel.addComponent(new Button("Close Window", () -> textGUI.removeWindow(chooseReturningReaderWindow)));
+                textGUI.addWindowAndWait(chooseReturningReaderWindow);
+                chooseReturningReaderPanel.removeAllComponents();
             }
-            chooseReturningReaderPanel.addComponent(new Button("close", () -> textGUI.removeWindow(chooseReturningReaderWindow)));
-            textGUI.addWindowAndWait(chooseReturningReaderWindow);
-            chooseReturningReaderPanel.removeAllComponents();
         }));
-        findReturningReaderPanel.addComponent(new Button("close", () -> textGUI.removeWindow(findReturningReaderWindow)));
+        findReturningReaderPanel.addComponent(new Button("Close Window", () -> textGUI.removeWindow(findReturningReaderWindow)));
 
         //CHECKING OUT BOOK
         final Window findReaderCheckingOutWindow = new BasicWindow("Check Out Window");
@@ -266,10 +282,10 @@ public class Main {
         Panel findBookToCheckOutPanel = new Panel(new GridLayout(3));
         Panel chooseBookToCheckOutPanel = new Panel(new GridLayout(2));
 
-        findReaderCheckingOutPanel.addComponent(new Label("Enter reader's name: "));
+        findReaderCheckingOutPanel.addComponent(new Label("Enter name of reader who is checking out: "));
         TextBox inputNameOfCheckingOutReader = new TextBox();
         findReaderCheckingOutPanel.addComponent(inputNameOfCheckingOutReader);
-        findReaderCheckingOutPanel.addComponent(new Button("search", () -> {
+        findReaderCheckingOutPanel.addComponent(new Button("Search", () -> {
             List<Reader> readers = readerService.findByName(inputNameOfCheckingOutReader.getText());
             for (Reader r : readers) {
                 chooseReaderCheckingOutPanel.addComponent(new Label(r.getFirstname() + " " + r.getLastname()));
@@ -538,6 +554,11 @@ public class Main {
         }));
         findBookToEditPanel.addComponent(new Button("close", () -> textGUI.removeWindow(findBookToEditWindow)));
 
+        contentPanel.addComponent(new Label(""));
+        contentPanel.addComponent(new Label(""));
+        contentPanel.addComponent(new Label("READER'S CARD MANAGEMENT:"));
+        contentPanel.addComponent(new Label(""));
+
         //ADD READER'S CARD
         final Window addReadersCardWindow = new BasicWindow("Add reader's card");
 
@@ -781,8 +802,46 @@ public class Main {
             checkIfOverduePanel.removeAllComponents();
         }));
 
+        //SHOW READER'S BOOKS
+        final Window checkReadersBooksWindow = new BasicWindow("Check reader's books");
+        final Window readersBooksWindow = new BasicWindow("Check reader's books");
 
+        Panel checkReadersBooksPanel = new Panel(new GridLayout(3));
+        Panel readersBooksPanel = new Panel(new GridLayout(2));
 
+        contentPanel.addComponent(new Label("Check reader's books"));
+        contentPanel.addComponent(
+                new Button("Check", () -> textGUI.addWindowAndWait(checkReadersBooksWindow)).setLayoutData(GridLayout.createLayoutData(GridLayout.Alignment.CENTER,GridLayout.Alignment.CENTER)));
+
+        checkReadersBooksPanel.addComponent(new Label("Enter name of reader to bo checked."));
+        TextBox inputReader = new TextBox();
+        checkReadersBooksPanel.addComponent(inputReader);
+        checkReadersBooksPanel.addComponent(new Button("Check", () -> {
+            List<Reader> readers = readerService.findByName(inputReader.getText());
+
+            if(readers.isEmpty()){
+                MessageDialog.showMessageDialog(textGUI, "Found readers", "No reader has been found.", MessageDialogButton.OK);
+            }else {
+                for(Reader r : readers){
+                    readersBooksPanel.addComponent(new Label(r.toString()));
+                    readersBooksPanel.addComponent(new Button("Check", () -> {
+                        if(readerService.checkedOutBooks(r).isEmpty()){
+                            MessageDialog.showMessageDialog(textGUI, "Found readers", "This reader has no checked out books.", MessageDialogButton.OK);
+                        }else{
+                            MessageDialog.showMessageDialog(textGUI, "Found readers",
+                                    bookService.titlesinOneString(readerService.checkedOutBooks(r)), MessageDialogButton.OK);
+                        }
+                    }));
+                    readersBooksPanel.addComponent(new Button("Close Window", () -> textGUI.removeWindow(readersBooksWindow)));
+                    textGUI.addWindowAndWait(readersBooksWindow);
+                    readersBooksPanel.removeAllComponents();
+                }
+            }
+        }));
+        checkReadersBooksPanel.addComponent(new Button("Close Window", () -> textGUI.removeWindow(checkReadersBooksWindow)));
+
+        checkReadersBooksWindow.setComponent(checkReadersBooksPanel);
+        readersBooksWindow.setComponent(readersBooksPanel);
         checkIfOverdueWindow.setComponent(checkIfOverduePanel);
         searchReaderWindow.setComponent(searchReaderPanel);
         findReaderToCheckWindow.setComponent(findReaderToCheckPanel);
