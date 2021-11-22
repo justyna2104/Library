@@ -154,28 +154,32 @@ public class Main {
         removeBookByTitlePanel.addComponent(new Button("Search", () -> {
                 String title = inputTitleToRemove.getText();
                 List<Book> books = bookService.findByTitle(title);
-            for (Book b : books) {
-                chooseBookToRemovePanel.addComponent(new Label(b.toString()));
-                chooseBookToRemovePanel.addComponent(new Button("Remove", () -> {
-                    areYouSureToRemoveBookPanel.addComponent(new Label("Are you sure you want to remove " + b.getTitle() + " from library's system?"));
-                    areYouSureToRemoveBookPanel.addComponent(new Button("YES", () -> {
-                        bookService.deleteEntity(b);
-                        MessageDialog.showMessageDialog(textGUI, "Removed", b.getTitle() + " has been removed.", MessageDialogButton.OK);
-                        textGUI.removeWindow(areYouSureToRemoveBookWindow);
-                        areYouSureToRemoveBookPanel.removeAllComponents();
+                if(books.isEmpty()){
+                    MessageDialog.showMessageDialog(textGUI, "Warning", "No book has been found.", MessageDialogButton.OK);
+                }else{
+                    for (Book b : books) {
+                        chooseBookToRemovePanel.addComponent(new Label(b.toString()));
+                        chooseBookToRemovePanel.addComponent(new Button("Remove", () -> {
+                            areYouSureToRemoveBookPanel.addComponent(new Label("Are you sure you want to remove " + b.getTitle() + " from library's system?"));
+                            areYouSureToRemoveBookPanel.addComponent(new Button("YES", () -> {
+                                bookService.deleteEntity(b);
+                                MessageDialog.showMessageDialog(textGUI, "Removed", b.getTitle() + " has been removed.", MessageDialogButton.OK);
+                                textGUI.removeWindow(areYouSureToRemoveBookWindow);
+                                areYouSureToRemoveBookPanel.removeAllComponents();
 
-                    }));
-                        areYouSureToRemoveBookPanel.addComponent(new Button("NO", () -> {
-                        textGUI.removeWindow(areYouSureToRemoveBookWindow);
-                        areYouSureToRemoveBookPanel.removeAllComponents();
-                    }));
-                    textGUI.addWindowAndWait(areYouSureToRemoveBookWindow);
-                }));
-            }
-            chooseBookToRemovePanel.addComponent(new Button("Close Window", () -> textGUI.removeWindow(chooseBookToRemoveWindow)));
-            textGUI.addWindowAndWait(chooseBookToRemoveWindow);
-            chooseBookToRemovePanel.removeAllComponents();
-    }));
+                            }));
+                            areYouSureToRemoveBookPanel.addComponent(new Button("NO", () -> {
+                                textGUI.removeWindow(areYouSureToRemoveBookWindow);
+                                areYouSureToRemoveBookPanel.removeAllComponents();
+                            }));
+                            textGUI.addWindowAndWait(areYouSureToRemoveBookWindow);
+                        }));
+                    }
+                    chooseBookToRemovePanel.addComponent(new Button("Close Window", () -> textGUI.removeWindow(chooseBookToRemoveWindow)));
+                    textGUI.addWindowAndWait(chooseBookToRemoveWindow);
+                    chooseBookToRemovePanel.removeAllComponents();
+                }
+        }));
         removeBookByTitlePanel.addComponent(new Button("Close Window", () -> textGUI.removeWindow(removeBookByTitleWindow)));
 
         //CHECK AVAILABILITY
@@ -183,7 +187,8 @@ public class Main {
         final Window whichToCheckWindow = new BasicWindow("Check Availability Window");
         contentPanel.addComponent(new Label("Check if book is available"));
         contentPanel.addComponent(
-                new Button("Check", () -> textGUI.addWindowAndWait(checkAvailabilityWindow)).setLayoutData(GridLayout.createLayoutData(GridLayout.Alignment.CENTER,GridLayout.Alignment.CENTER))
+                new Button("Check", () -> textGUI.addWindowAndWait(checkAvailabilityWindow))
+                        .setLayoutData(GridLayout.createLayoutData(GridLayout.Alignment.CENTER,GridLayout.Alignment.CENTER))
         );
 
         Panel checkAvailabilityPanel = new Panel(new GridLayout(3)); // panel to check availability
@@ -220,8 +225,8 @@ public class Main {
         final Window chooseReturningReaderWindow = new BasicWindow("Return Book Window");
         final Window returnBookWindow = new BasicWindow("Return Book Window");
         contentPanel.addComponent(new Label("Return book"));
-        contentPanel.addComponent(
-                new Button("Return", () -> textGUI.addWindowAndWait(findReturningReaderWindow)).setLayoutData(GridLayout.createLayoutData(GridLayout.Alignment.CENTER,GridLayout.Alignment.CENTER))
+        contentPanel.addComponent(new Button("Return", () -> textGUI.addWindowAndWait(findReturningReaderWindow))
+                .setLayoutData(GridLayout.createLayoutData(GridLayout.Alignment.CENTER,GridLayout.Alignment.CENTER))
         );
 
         Panel findReturningReaderPanel = new Panel(new GridLayout(3));
@@ -234,7 +239,7 @@ public class Main {
         findReturningReaderPanel.addComponent(new Button("Search", () -> {
             List<Reader> readers = readerService.findByName(inputNameOfReturningReader.getText());
             if(readers.isEmpty()){
-                MessageDialog.showMessageDialog(textGUI, "Found Books", "No reader has been found.", MessageDialogButton.OK);
+                MessageDialog.showMessageDialog(textGUI, "Found Readers", "No reader has been found.", MessageDialogButton.OK);
             }else{
                 for (Reader r : readers) {
                     chooseReturningReaderPanel.addComponent(new Label(r.getFirstname() + " " + r.getLastname()));
@@ -287,45 +292,53 @@ public class Main {
         findReaderCheckingOutPanel.addComponent(inputNameOfCheckingOutReader);
         findReaderCheckingOutPanel.addComponent(new Button("Search", () -> {
             List<Reader> readers = readerService.findByName(inputNameOfCheckingOutReader.getText());
-            for (Reader r : readers) {
-                chooseReaderCheckingOutPanel.addComponent(new Label(r.getFirstname() + " " + r.getLastname()));
-                chooseReaderCheckingOutPanel.addComponent(new Button("Choose", () ->{
-                    if(readerService.checkCheckOutAbility(r)){
-                        findBookToCheckOutPanel.addComponent(new Label("Enter title: "));
-                        TextBox inputTitleToCheckOut = new TextBox();
-                        findBookToCheckOutPanel.addComponent(inputTitleToCheckOut);
-                        findBookToCheckOutPanel.addComponent(new Button("Search", () -> {
-                            List<Book> books = bookService.findByTitle(inputTitleToCheckOut.getText());
-                            for (Book b : books) {
-                                chooseBookToCheckOutPanel.addComponent(new Label(b.getTitle()));
-                                chooseBookToCheckOutPanel.addComponent(new Button("Check Out", () -> {
-                                    if(bookService.checkAvailability(b)){
-                                        bookService.checkOut(b,r);
-                                        MessageDialog.showMessageDialog(textGUI, "Checked Out book", b.getTitle()
-                                                + " has been checked out by " + r.getFirstname() + " " + r.getLastname(), MessageDialogButton.OK);
-                                    }else{
-                                        MessageDialog.showMessageDialog(textGUI, "Checked Out book", b.getTitle()
-                                                + " isn't available.", MessageDialogButton.OK);
+            if(readers.isEmpty()){
+                MessageDialog.showMessageDialog(textGUI, "Found Readers", "No reader has been found.", MessageDialogButton.OK);
+            }else {
+                for (Reader r : readers) {
+                    chooseReaderCheckingOutPanel.addComponent(new Label(r.getFirstname() + " " + r.getLastname()));
+                    chooseReaderCheckingOutPanel.addComponent(new Button("Choose", () ->{
+                        if(readerService.checkCheckOutAbility(r)){
+                            findBookToCheckOutPanel.addComponent(new Label("Enter title: "));
+                            TextBox inputTitleToCheckOut = new TextBox();
+                            findBookToCheckOutPanel.addComponent(inputTitleToCheckOut);
+                            findBookToCheckOutPanel.addComponent(new Button("Search", () -> {
+                                List<Book> books = bookService.findByTitle(inputTitleToCheckOut.getText());
+                                if(books.isEmpty()){
+                                    MessageDialog.showMessageDialog(textGUI, "Found Books", "No book has been found.", MessageDialogButton.OK);
+                                }else {
+                                    for (Book b : books) {
+                                        chooseBookToCheckOutPanel.addComponent(new Label(b.getTitle()));
+                                        chooseBookToCheckOutPanel.addComponent(new Button("Check Out", () -> {
+                                            if(bookService.checkAvailability(b)){
+                                                bookService.checkOut(b,r);
+                                                MessageDialog.showMessageDialog(textGUI, "Checked Out book", b.getTitle()
+                                                        + " has been checked out by " + r.getFirstname() + " " + r.getLastname(), MessageDialogButton.OK);
+                                            }else{
+                                                MessageDialog.showMessageDialog(textGUI, "Checked Out book", b.getTitle()
+                                                        + " isn't available.", MessageDialogButton.OK);
+                                            }
+                                        }));
                                     }
-                                }));
-                            }
-                            chooseBookToCheckOutPanel.addComponent(new Button("Close", () -> textGUI.removeWindow(chooseBookToCheckOutWindow)));
-                            textGUI.addWindowAndWait(chooseBookToCheckOutWindow);
-                            chooseBookToCheckOutPanel.removeAllComponents();
-                        }));
-                        findBookToCheckOutPanel.addComponent(new Button("Close", () -> textGUI.removeWindow(findBookToCheckOutWindow)));
-                        textGUI.addWindowAndWait(findBookToCheckOutWindow);
-                        findBookToCheckOutPanel.removeAllComponents();
-                    }else{
-                        MessageDialog.showMessageDialog(textGUI, "Checked Out book", "This reader has too many books already.", MessageDialogButton.OK);
-                    }
-                }));
+                                    chooseBookToCheckOutPanel.addComponent(new Button("Close Window", () -> textGUI.removeWindow(chooseBookToCheckOutWindow)));
+                                    textGUI.addWindowAndWait(chooseBookToCheckOutWindow);
+                                    chooseBookToCheckOutPanel.removeAllComponents();
+                                }
+                            }));
+                            findBookToCheckOutPanel.addComponent(new Button("Close Window", () -> textGUI.removeWindow(findBookToCheckOutWindow)));
+                            textGUI.addWindowAndWait(findBookToCheckOutWindow);
+                            findBookToCheckOutPanel.removeAllComponents();
+                        }else{
+                            MessageDialog.showMessageDialog(textGUI, "Checked Out book", "This reader has too many books already.", MessageDialogButton.OK);
+                        }
+                    }));
+                }
+                chooseReaderCheckingOutPanel.addComponent(new Button("Close Window", () -> textGUI.removeWindow(chooseReaderCheckingOutWindow)));
+                textGUI.addWindowAndWait(chooseReaderCheckingOutWindow);
+                chooseReaderCheckingOutPanel.removeAllComponents();
             }
-            chooseReaderCheckingOutPanel.addComponent(new Button("Close", () -> textGUI.removeWindow(chooseReaderCheckingOutWindow)));
-            textGUI.addWindowAndWait(chooseReaderCheckingOutWindow);
-            chooseReaderCheckingOutPanel.removeAllComponents();
         }));
-        findReaderCheckingOutPanel.addComponent(new Button("Close", () -> textGUI.removeWindow(findReaderCheckingOutWindow)));
+        findReaderCheckingOutPanel.addComponent(new Button("Close Window", () -> textGUI.removeWindow(findReaderCheckingOutWindow)));
 
         //ADD BOOK
         final Window addBookWindow = new BasicWindow("Add Book");
@@ -334,15 +347,13 @@ public class Main {
         Panel addBookPanel = new Panel(new GridLayout(2));
         Panel addAuthorPanel = new Panel(new GridLayout(2));
 
-        //Tu sie zaczyna kosmos
         contentPanel.addComponent(new Label("Add Book"));
-        contentPanel.addComponent(
-                new Button("Add", () -> textGUI.addWindowAndWait(addBookWindow)).setLayoutData(GridLayout.createLayoutData(GridLayout.Alignment.CENTER,GridLayout.Alignment.CENTER)));
+        contentPanel.addComponent(new Button("Add", () -> textGUI.addWindowAndWait(addBookWindow))
+                .setLayoutData(GridLayout.createLayoutData(GridLayout.Alignment.CENTER,GridLayout.Alignment.CENTER)));
 
         //Most important book info
         addBookPanel.addComponent(new Label("Enter title: "));
         TextBox inputTitleOfNewBook = new TextBox();
-        //inputTitleOfNewBook.withBorder(Borders.singleLine());
         addBookPanel.addComponent(inputTitleOfNewBook.withBorder(Borders.singleLine()));
 
         addBookPanel.addComponent(new Label("Enter amount of available copies: "));
@@ -385,16 +396,16 @@ public class Main {
             addAuthorPanel.addComponent(new Button("Add", () -> {
                 Author author = new Author(inputAuthorsName.getText(), inputAuthorsLastName.getText(), LocalDate.parse(inputAuthorsDateOfBirth.getText()), inputAuthorsNationality.getText());
                 if(authorService.alreadyExists(author)){
-                    MessageDialog.showMessageDialog(textGUI,"Warning", "This author already exists.", MessageDialogButton.OK);
+                    MessageDialog.showMessageDialog(textGUI,"Warning", "This author exists in the system and has been added as an author of the book.", MessageDialogButton.OK);
                     Author existingAuthor = authorService.findTheSame(author);
                     choseAuthors.add(existingAuthor);
                 }else{
                     authorService.addEntity(author);
-                    MessageDialog.showMessageDialog(textGUI,"Added author", "Author has been added.", MessageDialogButton.OK);
+                    MessageDialog.showMessageDialog(textGUI,"Added author", "Author has been added to the system and as an author of the book.", MessageDialogButton.OK);
                     choseAuthors.add(authorService.findTheSame(author));
                 }
             }));
-            addAuthorPanel.addComponent(new Button("close", () -> textGUI.removeWindow(addAuthorWindow)));
+            addAuthorPanel.addComponent(new Button("Close Window", () -> textGUI.removeWindow(addAuthorWindow)));
             textGUI.addWindowAndWait(addAuthorWindow);
             addAuthorPanel.removeAllComponents();
         }));
@@ -407,21 +418,20 @@ public class Main {
             Book newBook = new Book(inputTitleOfNewBook.getText(), Long.parseLong(inputISBN.getText()), authorSet, genresSet, Integer.parseInt(inputAmountOfAvailableCopies.getText()));
 
             if(bookService.checkIfExists(newBook)){
-                MessageDialog.showMessageDialog(textGUI,"Warning", "This book already exists.", MessageDialogButton.OK);
+                MessageDialog.showMessageDialog(textGUI,"Warning", "Book with this ISBN already exists.", MessageDialogButton.OK);
             }else{
                bookService.addEntity(newBook);
-               //Book book = bookService.findByTitle(newBook.getTitle()).stream().findFirst().get(); //ISBN
                 Book book = bookService.findByISBN(newBook.getIsbnNumber());
                 for(Author a : choseAuthors){
                     a.getBooks().add(book);
                     authorService.updateEntity(a);
                 }
-                MessageDialog.showMessageDialog(textGUI,"Added author", "Author has been added.", MessageDialogButton.OK);
+                MessageDialog.showMessageDialog(textGUI,"Added book", "Book has been added.", MessageDialogButton.OK);
                 choseAuthors.clear(); // ToDo nwm czy to trzeba ale obawiam sie że jak nie wyczyszcze to przy dodaniu dwóch książek przy jednym uruchomieniu to czy nie beda zostawać
             }
         }));
         addBookPanel.addComponent(new Label(""));
-        addBookPanel.addComponent(new Button("close", () -> textGUI.removeWindow(addBookWindow)));
+        addBookPanel.addComponent(new Button("Close Window", () -> textGUI.removeWindow(addBookWindow)));
 
         // EDIT BOOK
         final Window findBookToEditWindow = new BasicWindow("Edit Book");
