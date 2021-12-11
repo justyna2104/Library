@@ -78,7 +78,7 @@ public class BookService extends GenericDao<Book> {
     public String oneString(List<Book> books){
         String result = "";
         for (Book s:books) {
-            result += s.toString() + " \n" + "\n";
+            result += s.toString() + " \n" ;
         }
         return result;
     }
