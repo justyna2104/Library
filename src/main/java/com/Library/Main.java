@@ -1,12 +1,7 @@
 package com.Library;
 
-import java.awt.event.ComponentListener;
-import java.text.ParseException;
-
 
 import javax.swing.*;
-import java.io.IOException;
-
 
 public class Main {
     public static void main(String[] args){
@@ -17,5 +12,11 @@ public class Main {
         GenreService genreService = new GenreService();
         CheckOutService checkOutService = new CheckOutService();
 
+        JFrame window = new JFrame("Main Menu");
+        window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        window.setVisible(true);
+        final JDesktopPane desktop = new JDesktopPane();
+
+        JLabel
     }
 }
