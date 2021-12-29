@@ -115,6 +115,14 @@ public class BookService extends GenericDao<Book> {
         //entityManager.close();
     }
 
+    public boolean isCheckedOut(Book book){
+        List<CheckOut> books = entityManager.createQuery("select c from CheckOut c join c.book b where b.isbnNumber = :isbn")
+                .setParameter("isbn", book.getIsbnNumber()).getResultList();
+        if(books.isEmpty()){
+            return false;
+        }else return true;
+    }
+
     }
 
 
