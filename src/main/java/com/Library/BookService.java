@@ -86,7 +86,7 @@ public class BookService extends GenericDao<Book> {
     public String titlesinOneString(List<Book> books){
         String result = "";
         for (Book b : books) {
-            result += b.getTitle() + " ";
+            result += b.getTitle() + " \n";
         }
         return result;
     }
